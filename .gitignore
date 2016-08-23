@@ -7,3 +7,13 @@
 /captures
 /.idea/dictionaries
 /monkeytong.jks
+.idea/vcs.xml
+.idea/uiDesigner.xml
+.idea/modules/WeChatLuckyMoney.iml
+.idea/modules/app/app.iml
+.idea/modules.xml
+.idea/misc.xml
+.idea/gradle.xml
+.idea/compiler.xml
+WeChatLuckyMoney.iml
+app/app.iml
