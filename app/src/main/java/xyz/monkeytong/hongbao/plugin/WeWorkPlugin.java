@@ -26,7 +26,7 @@ public class WeWorkPlugin implements IPlugin {
     private static final String WEWORK_DETAILS_EN = "Details";
     private static final String WEWORK_DETAILS_CH = "企业微信红包";
     private static final String WEWORK_BETTER_LUCK_EN = "Better luck next time!";
-    private static final String WEWORK_BETTER_LUCK_CH = "手慢了";
+    private static final String WEWORK_BETTER_LUCK_CH = "手慢了，红包派完了";
     private static final String WEWORK_EXPIRES_CH = "已超过24小时";
     private static final String WEWORK_VIEW_SELF_CH = "查看红包";
     private static final String WEWORK_VIEW_OTHERS_CH = "领取红包";
@@ -157,13 +157,13 @@ public class WeWorkPlugin implements IPlugin {
 
         //非layout元素
         if (node.getChildCount() == 0) {
+            Log.w(TAG, node.getClassName() + "#" + node.getText());
             if ("android.widget.ImageView".equals(node.getClassName())) {
                 Rect bounds = new Rect();
                 node.getBoundsInScreen(bounds);
                 int screenWidth = service.getResources().getDisplayMetrics().widthPixels;
                 int marginLeft = bounds.left;
                 int marginRight = screenWidth - bounds.right;
-                Log.w(TAG, "image view margin delta : " + Math.abs(marginLeft - marginRight));
                 return Math.abs(marginLeft - marginRight) > 100 ? null : node;
             } else {
                 return null;
@@ -173,7 +173,12 @@ public class WeWorkPlugin implements IPlugin {
         //layout元素，遍历找button
         AccessibilityNodeInfo button;
         for (int i = 0; i < node.getChildCount(); i++) {
-            button = findOpenButton(node.getChild(i));
+            AccessibilityNodeInfo childNode = node.getChild(i);
+            List<AccessibilityNodeInfo> nodeList = childNode.findAccessibilityNodeInfosByText(WEWORK_BETTER_LUCK_CH);
+            if(nodeList != null && !nodeList.isEmpty()) {
+                return childNode;
+            }
+            button = findOpenButton(childNode);
             if (button != null)
                 return button;
         }
@@ -213,7 +218,6 @@ public class WeWorkPlugin implements IPlugin {
                 : getTheLastNode(WEWORK_VIEW_OTHERS_CH);
         boolean containActivity = currentActivityName.contains(WEWORK_LUCKMONEY_CHATTING_ACTIVITY)
                 || currentActivityName.contains(WEWORK_LUCKMONEY_GENERAL_ACTIVITY);
-        Log.w(TAG, "node1 : " + currentActivityName + "--->" + (node1 != null && containActivity));
         if (node1 != null && containActivity) {
             String excludeWords = sharedPreferences.getString("pref_watch_exclude_words", "");
             if (signature.generateSignature(node1, excludeWords, PLUGIN_PACKAGE_NAME)) {
@@ -226,7 +230,7 @@ public class WeWorkPlugin implements IPlugin {
 
         /* 戳开红包，红包还没抢完，遍历节点匹配“拆红包” */
         AccessibilityNodeInfo node2 = findOpenButton(rootNodeInfo);
-        if (node2 != null && "android.widget.ImageView".equals(node2.getClassName()) && currentActivityName.contains(WEWORK_LUCKMONEY_RECEIVE_ACTIVITY)) {
+        if (node2 != null && currentActivityName.contains(WEWORK_LUCKMONEY_RECEIVE_ACTIVITY)) {
             mUnpackNode = node2;
             mUnpackCount += 1;
             return;
