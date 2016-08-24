@@ -30,7 +30,7 @@ public class WeWorkPlugin implements IPlugin {
     private static final String WEWORK_EXPIRES_CH = "已超过24小时";
     private static final String WEWORK_VIEW_SELF_CH = "查看红包";
     private static final String WEWORK_VIEW_OTHERS_CH = "领取红包";
-    private static final String WEWORK_NOTIFICATION_TIP = "[微信红包]";
+    private static final String WEWORK_NOTIFICATION_TIP = "[红包]";
     private static final String WEWORK_LUCKMONEY_RECEIVE_ACTIVITY = "RedEnvelopeCollectorActivity";
     private static final String WEWORK_LUCKMONEY_DETAIL_ACTIVITY = "RedEnvelopeDetailActivity";
     private static final String WEWORK_LUCKMONEY_GENERAL_ACTIVITY = "WwMainActivity";
