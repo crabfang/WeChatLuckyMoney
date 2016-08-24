@@ -157,7 +157,6 @@ public class WeWorkPlugin implements IPlugin {
 
         //非layout元素
         if (node.getChildCount() == 0) {
-            Log.w(TAG, node.getClassName() + "#" + node.getText());
             if ("android.widget.ImageView".equals(node.getClassName())) {
                 Rect bounds = new Rect();
                 node.getBoundsInScreen(bounds);

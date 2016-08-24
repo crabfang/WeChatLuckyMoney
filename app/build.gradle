@@ -42,3 +42,36 @@ dependencies {
     compile 'com.tencent.bugly:crashreport_upgrade:latest.release'//其中latest.release指代最新版本号，也可以指定明确的版本号，例如1.0.1
 }
 
+ apply plugin: "com.cabe.pgyer"
+
+ String getPropertyVal(String key) {
+     Properties properties = new Properties()
+     try {
+         properties.load(project.rootProject.file('local.properties').newDataInputStream())
+     } catch (Exception e) {
+         e.printStackTrace()
+         return ""
+     }
+     String property = properties.getProperty(key)
+     println "property-->" + key + " : " + property
+     property
+ }
+ pgyer {
+     _api_key = getPropertyVal("pgyer_api_key")
+     uKey = getPropertyVal("pgyer_user_key")
+ }
+
+ task doUpload(dependsOn: [assembleRelease, uploadPgyer])  {
+
+     android.applicationVariants.all { variant ->
+         variant.assemble.doLast {
+             variant.outputs.each { output ->
+                 apks {
+                     release {
+                         sourceFile = file(output.outputFile.path)
+                     }
+                 }
+             }
+         }
+     }
+ }
