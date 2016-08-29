@@ -170,16 +170,17 @@ public class WeWorkPlugin implements IPlugin {
         }
 
         //layout元素，遍历找button
-        AccessibilityNodeInfo button;
         for (int i = 0; i < node.getChildCount(); i++) {
             AccessibilityNodeInfo childNode = node.getChild(i);
-            List<AccessibilityNodeInfo> nodeList = childNode.findAccessibilityNodeInfosByText(WEWORK_BETTER_LUCK_CH);
-            if(nodeList != null && !nodeList.isEmpty()) {
-                return childNode;
+            if(childNode != null) {
+                List<AccessibilityNodeInfo> nodeList = childNode.findAccessibilityNodeInfosByText(WEWORK_BETTER_LUCK_CH);
+                if(nodeList != null && !nodeList.isEmpty()) {
+                    return childNode;
+                }
+                AccessibilityNodeInfo button = findOpenButton(childNode);
+                if (button != null)
+                    return button;
             }
-            button = findOpenButton(childNode);
-            if (button != null)
-                return button;
         }
         return null;
     }
