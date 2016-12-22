@@ -20,22 +20,20 @@ import xyz.monkeytong.hongbao.utils.HongbaoSignature;
  * Created by cabe on 16/8/23.
  */
 public class WeWorkPlugin implements IPlugin {
-    protected final static String TAG = "WeWorkPlugin";
+    private final static String TAG = "WeWorkPlugin";
     public final static String PLUGIN_PACKAGE_NAME = "com.tencent.wework";
 
-    private static final String WEWORK_DETAILS_EN = "Details";
-    private static final String WEWORK_DETAILS_CH = "企业微信红包";
-    private static final String WEWORK_BETTER_LUCK_EN = "Better luck next time!";
-    private static final String WEWORK_BETTER_LUCK_CH = "手慢了，红包派完了";
-    private static final String WEWORK_EXPIRES_CH = "已超过24小时";
-    private static final String WEWORK_VIEW_SELF_CH = "查看红包";
-    private static final String WEWORK_VIEW_OTHERS_CH = "领取红包";
-    private static final String WEWORK_NOTIFICATION_TIP = "[红包]";
-    private static final String WEWORK_LUCKMONEY_RECEIVE_ACTIVITY = "RedEnvelopeCollectorActivity";
-    private static final String WEWORK_LUCKMONEY_DETAIL_ACTIVITY = "RedEnvelopeDetailActivity";
-    private static final String WEWORK_LUCKMONEY_GENERAL_ACTIVITY = "WwMainActivity";
-    private static final String WEWORK_LUCKMONEY_CHATTING_ACTIVITY = "MessageListActivity";
-    private String currentActivityName = WEWORK_LUCKMONEY_GENERAL_ACTIVITY;
+    private static final String WE_WORK_DETAILS_CH = "企业微信红包";
+    private static final String WE_WORK_BETTER_LUCK_CH = "手慢了，红包派完了";
+    private static final String WE_WORK_EXPIRES_CH = "已超过24小时";
+    private static final String WE_WORK_VIEW_SELF_CH = "查看红包";
+    private static final String WE_WORK_VIEW_OTHERS_CH = "领取红包";
+    private static final String WE_WORK_NOTIFICATION_TIP = "[拼手气红包]";
+    private static final String WE_WORK_LUCK_MONEY_RECEIVE_ACTIVITY = "RedEnvelopeCollectorActivity";
+    private static final String WE_WORK_LUCK_MONEY_DETAIL_ACTIVITY = "RedEnvelopeDetailActivity";
+    private static final String WE_WORK_LUCK_MONEY_GENERAL_ACTIVITY = "WwMainActivity";
+    private static final String WE_WORK_LUCK_MONEY_CHATTING_ACTIVITY = "MessageListActivity";
+    private String currentActivityName = WE_WORK_LUCK_MONEY_GENERAL_ACTIVITY;
 
     private AccessibilityNodeInfo rootNodeInfo, mReceiveNode, mUnpackNode;
     private boolean mLuckyMoneyPicked, mLuckyMoneyReceived;
@@ -111,15 +109,15 @@ public class WeWorkPlugin implements IPlugin {
         if (event.getEventType() != AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED || eventSource == null)
             return false;
 
-        List<AccessibilityNodeInfo> nodes = eventSource.findAccessibilityNodeInfosByText(WEWORK_NOTIFICATION_TIP);
-        //增加条件判断currentActivityName.contains(WEWORK_LUCKMONEY_GENERAL_ACTIVITY)
+        List<AccessibilityNodeInfo> nodes = eventSource.findAccessibilityNodeInfosByText(WE_WORK_NOTIFICATION_TIP);
+        //增加条件判断currentActivityName.contains(WE_WORK_LUCK_MONEY_GENERAL_ACTIVITY)
         //避免当订阅号中出现标题为“[微信红包]拜年红包”（其实并非红包）的信息时误判
-        if (!nodes.isEmpty() && currentActivityName.contains(WEWORK_LUCKMONEY_GENERAL_ACTIVITY)) {
+        if (!nodes.isEmpty() && currentActivityName.contains(WE_WORK_LUCK_MONEY_GENERAL_ACTIVITY)) {
             AccessibilityNodeInfo nodeToClick = nodes.get(0);
             if (nodeToClick == null) return false;
-            CharSequence contentDescription = nodeToClick.getContentDescription();
+            CharSequence contentDescription = nodeToClick.getText();
             if (contentDescription != null && !signature.getContentDescription().equals(contentDescription)) {
-                nodeToClick.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+                nodeToClick.getParent().performAction(AccessibilityNodeInfo.ACTION_CLICK);
                 signature.setContentDescription(contentDescription.toString());
                 return true;
             }
@@ -134,7 +132,7 @@ public class WeWorkPlugin implements IPlugin {
 
         // Not a hongbao
         String tip = event.getText().toString();
-        if (!tip.contains(WEWORK_NOTIFICATION_TIP)) return true;
+        if (!tip.contains(WE_WORK_NOTIFICATION_TIP)) return true;
 
         Parcelable parcelable = event.getParcelableData();
         if (parcelable instanceof Notification) {
@@ -173,7 +171,7 @@ public class WeWorkPlugin implements IPlugin {
         for (int i = 0; i < node.getChildCount(); i++) {
             AccessibilityNodeInfo childNode = node.getChild(i);
             if(childNode != null) {
-                List<AccessibilityNodeInfo> nodeList = childNode.findAccessibilityNodeInfosByText(WEWORK_BETTER_LUCK_CH);
+                List<AccessibilityNodeInfo> nodeList = childNode.findAccessibilityNodeInfosByText(WE_WORK_BETTER_LUCK_CH);
                 if(nodeList != null && !nodeList.isEmpty()) {
                     return childNode;
                 }
@@ -185,14 +183,14 @@ public class WeWorkPlugin implements IPlugin {
         return null;
     }
 
-    public boolean isDetailActivity(AccessibilityNodeInfo node) {
+    private boolean isDetailActivity(AccessibilityNodeInfo node) {
         if (node == null)
             return false;
 
         //非layout元素
         if (node.getChildCount() == 0) {
             String text = node.getText() + "";
-            return text.equals(WEWORK_DETAILS_CH);
+            return text.equals(WE_WORK_DETAILS_CH);
         }
 
         //layout元素，遍历找button
@@ -214,36 +212,35 @@ public class WeWorkPlugin implements IPlugin {
 
         /* 聊天会话窗口，遍历节点匹配“领取红包”和"查看红包" */
         AccessibilityNodeInfo node1 = (sharedPreferences.getBoolean("pref_watch_self", false))
-                ? getTheLastNode(WEWORK_VIEW_OTHERS_CH, WEWORK_VIEW_SELF_CH)
-                : getTheLastNode(WEWORK_VIEW_OTHERS_CH);
-        boolean containActivity = currentActivityName.contains(WEWORK_LUCKMONEY_CHATTING_ACTIVITY)
-                || currentActivityName.contains(WEWORK_LUCKMONEY_GENERAL_ACTIVITY);
+                ? getTheLastNode(WE_WORK_VIEW_OTHERS_CH, WE_WORK_VIEW_SELF_CH)
+                : getTheLastNode(WE_WORK_VIEW_OTHERS_CH);
+        boolean containActivity = currentActivityName.contains(WE_WORK_LUCK_MONEY_CHATTING_ACTIVITY)
+                || currentActivityName.contains(WE_WORK_LUCK_MONEY_GENERAL_ACTIVITY);
         if (node1 != null && containActivity) {
             String excludeWords = sharedPreferences.getString("pref_watch_exclude_words", "");
             if (signature.generateSignature(node1, excludeWords, PLUGIN_PACKAGE_NAME)) {
                 mLuckyMoneyReceived = true;
                 mReceiveNode = node1;
-                Log.d(TAG, this.signature.toString());
+                Log.d(TAG, signature.toString());
             }
             return;
         }
 
         /* 戳开红包，红包还没抢完，遍历节点匹配“拆红包” */
         AccessibilityNodeInfo node2 = findOpenButton(rootNodeInfo);
-        if (node2 != null && currentActivityName.contains(WEWORK_LUCKMONEY_RECEIVE_ACTIVITY)) {
+        if (node2 != null && currentActivityName.contains(WE_WORK_LUCK_MONEY_RECEIVE_ACTIVITY)) {
             mUnpackNode = node2;
             mUnpackCount += 1;
             return;
         }
 
-        /* 戳开红包，红包已被抢完，遍历节点匹配“红包详情”和“手慢了” */
-        boolean hasNodes = hasOneOfThoseNodes(
-                WEWORK_BETTER_LUCK_CH, WEWORK_DETAILS_CH,
-                WEWORK_BETTER_LUCK_EN, WEWORK_DETAILS_EN, WEWORK_EXPIRES_CH);
+        boolean isStateChanged = eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED;
         boolean isDetail = isDetailActivity(rootNodeInfo);
-        if (eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED && isDetail
-                && (currentActivityName.contains(WEWORK_LUCKMONEY_DETAIL_ACTIVITY)
-                || currentActivityName.contains(WEWORK_LUCKMONEY_RECEIVE_ACTIVITY))) {
+        /* 戳开红包，红包已被抢完，遍历节点匹配“红包详情”和“手慢了” */
+        boolean hasNodes = hasOneOfThoseNodes(WE_WORK_BETTER_LUCK_CH, WE_WORK_DETAILS_CH, WE_WORK_EXPIRES_CH);
+        boolean isPacketActivity = currentActivityName.contains(WE_WORK_LUCK_MONEY_DETAIL_ACTIVITY)
+                || currentActivityName.contains(WE_WORK_LUCK_MONEY_RECEIVE_ACTIVITY);
+        if (isStateChanged && isDetail && hasNodes && isPacketActivity) {
             mMutex = false;
             mLuckyMoneyPicked = false;
             mUnpackCount = 0;
@@ -254,14 +251,12 @@ public class WeWorkPlugin implements IPlugin {
 
     private void sendComment() {
         try {
-            AccessibilityNodeInfo outNode =
-                    service.getRootInActiveWindow().getChild(0).getChild(0);
+            AccessibilityNodeInfo outNode = service.getRootInActiveWindow().getChild(0).getChild(0);
             AccessibilityNodeInfo nodeToInput = outNode.getChild(outNode.getChildCount() - 1).getChild(0).getChild(1);
 
             if ("android.widget.EditText".equals(nodeToInput.getClassName())) {
                 Bundle arguments = new Bundle();
-                arguments.putCharSequence(AccessibilityNodeInfo
-                        .ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, signature.commentString);
+                arguments.putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, signature.commentString);
                 nodeToInput.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, arguments);
             }
         } catch (Exception e) {
@@ -301,7 +296,7 @@ public class WeWorkPlugin implements IPlugin {
                 if (bounds.bottom > bottom) {
                     bottom = bounds.bottom;
                     lastNode = tempNode;
-                    signature.others = text.equals(WEWORK_VIEW_OTHERS_CH);
+                    signature.others = text.equals(WE_WORK_VIEW_OTHERS_CH);
                 }
             }
         }
