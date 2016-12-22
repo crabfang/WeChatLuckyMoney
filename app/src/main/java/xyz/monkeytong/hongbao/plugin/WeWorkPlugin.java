@@ -44,6 +44,9 @@ public class WeWorkPlugin implements IPlugin {
     private AccessibilityService service;
     private SharedPreferences sharedPreferences;
 
+    //是否是从聊天列表进入的，如果是则关闭聊天界面
+    private String KEY_FROM_CHAT_LIST = "isFromChatList";
+
     @Override
     public void setService(AccessibilityService service) {
         this.service = service;
@@ -64,6 +67,26 @@ public class WeWorkPlugin implements IPlugin {
         this.currentActivityName = activityName;
     }
 
+    private void updateFromChat(boolean isFrom) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean(KEY_FROM_CHAT_LIST, isFrom);
+        editor.apply();
+    }
+
+    private void actionGoBackChat() {
+        boolean isFromChatList = sharedPreferences.getBoolean(KEY_FROM_CHAT_LIST, false);
+        if(isFromChatList) {
+            updateFromChat(false);
+            new android.os.Handler().postDelayed(
+                    new Runnable() {
+                        public void run() {
+                            service.performGlobalAction(AccessibilityService.GLOBAL_ACTION_BACK);
+                        }
+                    },
+                    400);
+        }
+    }
+
     public void watchChat(AccessibilityEvent event) {
         this.rootNodeInfo = service.getRootInActiveWindow();
 
@@ -75,12 +98,14 @@ public class WeWorkPlugin implements IPlugin {
         checkNodeInfo(event.getEventType());
 
         /* 如果已经接收到红包并且还没有戳开 */
-        if (mLuckyMoneyReceived && !mLuckyMoneyPicked && (mReceiveNode != null)) {
+        if (mLuckyMoneyReceived && !mLuckyMoneyPicked && mReceiveNode != null) {
             mMutex = true;
 
             mReceiveNode.getParent().performAction(AccessibilityNodeInfo.ACTION_CLICK);
             mLuckyMoneyReceived = false;
             mLuckyMoneyPicked = true;
+
+            actionGoBackChat();
         }
         /* 如果戳开但还未领取 */
         if (mUnpackCount == 1 && (mUnpackNode != null)) {
@@ -98,6 +123,8 @@ public class WeWorkPlugin implements IPlugin {
                         }
                     },
                     delayFlag);
+        } else {
+            actionGoBackChat();
         }
     }
 
@@ -119,6 +146,8 @@ public class WeWorkPlugin implements IPlugin {
             if (contentDescription != null && !signature.getContentDescription().equals(contentDescription)) {
                 nodeToClick.getParent().performAction(AccessibilityNodeInfo.ACTION_CLICK);
                 signature.setContentDescription(contentDescription.toString());
+
+                updateFromChat(true);
                 return true;
             }
         }
@@ -246,6 +275,8 @@ public class WeWorkPlugin implements IPlugin {
             mUnpackCount = 0;
             service.performGlobalAction(AccessibilityService.GLOBAL_ACTION_BACK);
             signature.commentString = generateCommentString();
+
+            actionGoBackChat();
         }
     }
 
