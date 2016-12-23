@@ -27,7 +27,7 @@ public class UpdateTask extends AsyncTask<String, String, String> {
     public static int count = 0;
     private Context context;
     private boolean isUpdateOnRelease;
-    public static final String updateUrl = "https://api.github.com/repos/geeeeeeeeek/WeChatLuckyMoney/releases/latest";
+    private static final String updateUrl = "https://api.github.com/repos/crabfang/WeChatLuckyMoney/releases/latest";
 
     public UpdateTask(Context context, boolean needUpdate) {
         this.context = context;
@@ -70,7 +70,7 @@ public class UpdateTask extends AsyncTask<String, String, String> {
             PackageInfo pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
             String version = pInfo.versionName;
 
-            String latestVersion = release.getString("tag_name");
+            String latestVersion = release.getString("tag_name").replace("work-", "");
             boolean isPreRelease = release.getBoolean("prerelease");
             if (!isPreRelease && version.compareToIgnoreCase(latestVersion) >= 0) {
                 // Your version is ahead of or same as the latest.
