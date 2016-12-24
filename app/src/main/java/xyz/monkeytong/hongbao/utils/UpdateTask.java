@@ -62,6 +62,9 @@ public class UpdateTask extends AsyncTask<String, String, String> {
     @Override
     protected void onPostExecute(String result) {
         super.onPostExecute(result);
+
+        if(result == null) return;
+
         try {
             count += 1;
             JSONObject release = new JSONObject(result);

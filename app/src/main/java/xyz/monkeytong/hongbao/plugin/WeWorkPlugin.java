@@ -247,7 +247,7 @@ public class WeWorkPlugin implements IPlugin {
                 || currentActivityName.contains(WE_WORK_LUCK_MONEY_GENERAL_ACTIVITY);
         if (node1 != null && containActivity) {
             String excludeWords = sharedPreferences.getString("pref_watch_exclude_words", "");
-            if (signature.generateSignature(node1, excludeWords, PLUGIN_PACKAGE_NAME)) {
+            if (signature.generateSignature4Work(node1, excludeWords)) {
                 mLuckyMoneyReceived = true;
                 mReceiveNode = node1;
                 Log.d(TAG, signature.toString());

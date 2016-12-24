@@ -37,7 +37,7 @@ public class HongbaoService extends AccessibilityService implements SharedPrefer
         if (sharedPreferences == null) return;
 
         setCurrentActivityName(event);
-        Log.w("HongbaoService", "onAccessibilityEvent:" + currentActivityName);
+        Log.d("HongbaoService", "onAccessibilityEvent:" + currentActivityName);
 
         IPlugin plugin = null;
         if(WeChatPlugin.PLUGIN_PACKAGE_NAME.equals(currentPackageName)) {
